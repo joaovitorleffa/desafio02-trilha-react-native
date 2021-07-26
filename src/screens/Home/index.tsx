@@ -12,6 +12,7 @@ import {
   EmptyListMessage,
 } from "./styles";
 import { Alert } from "react-native";
+import { useLoginsStorage } from "../../hooks/storage";
 
 interface LoginDataProps {
   id: string;
@@ -27,19 +28,19 @@ const key = "@passmanager:logins";
 export function Home() {
   const [searchListData, setSearchListData] = useState<LoginListDataProps>([]);
   const [data, setData] = useState<LoginListDataProps>([]);
+  const { getLogins } = useLoginsStorage();
 
   async function loadData() {
     try {
-      const response = await AsyncStorage.getItem(key);
-      
+      const response = await getLogins();
+
       if (!response) return;
-      
-      const parsed = JSON.parse(response);
-      setSearchListData(parsed);
-      setData(parsed);
+
+      setSearchListData([...response]);
+      setData([...response]);
     } catch (error) {
       console.log(error);
-      Alert.alert('Não foi possível buscar os dados...')
+      Alert.alert("Não foi possível buscar os dados...");
     }
   }
   useEffect(() => {

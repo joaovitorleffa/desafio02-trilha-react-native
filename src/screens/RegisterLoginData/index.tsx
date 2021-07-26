@@ -4,13 +4,13 @@ import { useForm } from "react-hook-form";
 import { RFValue } from "react-native-responsive-fontsize";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import uuid from "react-native-uuid";
 
 import { Input } from "../../components/Form/Input";
 import { Button } from "../../components/Form/Button";
 
 import { Container, HeaderTitle, Form } from "./styles";
+import { useLoginsStorage } from "../../hooks/storage";
 
 interface FormData {
   title: string;
@@ -26,8 +26,6 @@ const schema = Yup.object().shape({
   password: Yup.string().required("Senha é obrigatória!"),
 });
 
-const key = "@passmanager:logins";
-
 export function RegisterLoginData() {
   const {
     control,
@@ -35,6 +33,7 @@ export function RegisterLoginData() {
     reset,
     formState: { errors },
   } = useForm({ resolver: yupResolver(schema) });
+  const { setLogin } = useLoginsStorage();
 
   async function handleRegister(formData: FormData) {
     const newLoginData = {
@@ -42,16 +41,12 @@ export function RegisterLoginData() {
       ...formData,
     };
     try {
-      const logins = await AsyncStorage.getItem(key);
+      setLogin(newLoginData);
 
-      const parsed = logins ? JSON.parse(logins) : [];
-      
-      await AsyncStorage.setItem(key, JSON.stringify([...parsed, newLoginData]));
-
-      reset()
+      reset();
     } catch (error) {
-      console.log(error)
-      Alert.alert("Não foi possível adicionar um novo registro...")
+      console.log(error);
+      Alert.alert("Não foi possível adicionar um novo registro...");
     }
   }
 
